@@ -15,7 +15,7 @@
         // Query untuk memasukkan data korban
         $query = $db->prepare("INSERT INTO korban (NIK, id_bencana, jenis_kelamin, nama, asal, usia, status, id_posko) 
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $query->bind_param("sisssisi", $NIK, $id_bencana, $jenis_kelamin, $nama, $asal, $usia, $status, $id_posko);
+        $query->bind_param("sisssisi", $nik, $id_bencana, $jenis_kelamin, $nama, $asal, $usia, $status, $id_posko);
 
         if ($query->execute()) {
             header("Location: daftarKorban.php");

@@ -2,26 +2,6 @@
     include "koneksi.php"; // Menggunakan koneksi dengan $db
     session_start();
 
-    // Logout dan kirimkan ke tabel user
-    if (isset($_POST['logout'])) {
-        $user_id = $_SESSION['user_id']; // Asumsikan ada user_id di session
-        $logout_time = date('Y-m-d H:i:s'); // Waktu logout
-
-        // Menyimpan data logout ke tabel 'user'
-        date_default_timezone_set('Asia/Jakarta');
-        $query = $db->prepare("UPDATE user SET last_logout = ? WHERE id_user = ?");
-        $query->bind_param("si", $logout_time, $user_id);
-        if ($query->execute()) {
-            // Hapus session dan logout
-            session_unset();
-            session_destroy();
-            header('Location: login.php'); // Redirect ke halaman login
-            exit();
-        } else {
-            echo "Error: " . $db->error;
-        }
-    }
-
     // Query untuk chart 1: Jumlah Bencana berdasarkan Jenis Bencana
     $query1 = $db->query("SELECT jenis_bencana, COUNT(*) AS total FROM bencana GROUP BY jenis_bencana");
     $chart1_labels = [];
@@ -284,12 +264,9 @@
         <a href="daftarPetugas.php">Daftar Petugas</a>
         <a href="daftarPosko.php">Daftar Posko</a>
         <a href="daftarKeluarga.php">Daftar Keluarga</a>
-        <button type="submit" name="logout" class="logout-btn" id="logout-btn">Logout</button>
-    </div>
-
-    <!-- Notifikasi -->
-    <div id="notification" class="notification">
-        <p id="notif-message">Logout berhasil!</p>
+        <form action="logout.php" method="POST">
+            <button type="submit" name="logout" class="logout-btn">Logout</button>
+        </form>
     </div>
 
     <!-- Navbar -->
@@ -444,29 +421,6 @@
                 scales: {
                     y: { beginAtZero: true }
                 }
-            }
-        });
-
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            if (confirm("Apakah Anda yakin ingin logout?")) {
-                // Buat objek FormData untuk mengirim data POST
-                const formData = new FormData();
-                formData.append("logout", true);
-                // Kirim request POST ke beranda.php
-                fetch("beranda.php", {
-                    method: "POST",
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        // Jika berhasil, redirect ke halaman login
-                        window.location.href = "login.php";
-                    } else {
-                        alert("Logout gagal. Silakan coba lagi.");
-                    }
-                }).catch(error => {
-                    console.error("Error:", error);
-                    alert("Terjadi kesalahan. Silakan coba lagi.");
-                });
             }
         });
     </script>

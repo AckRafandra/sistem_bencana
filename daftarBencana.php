@@ -3,7 +3,7 @@
     session_start();
 
     // Menampilkan data bencana
-    $query = "SELECT id_bencana, nama_bencana, jenis_bencana, status, kronologi, waktu_kejadian, lokasi_kejadian FROM bencana ORDER BY id_bencana ASC";
+    $query = "SELECT * FROM bencana ORDER BY id_bencana ASC";
     $result = $db->query($query);
 ?>
 
@@ -84,6 +84,9 @@
         h2 {
             color: #333;
             margin: 20px 0;
+        }
+        h3 {
+            color: white;
         }
 
         /* Navbar */
@@ -301,12 +304,9 @@
         <a href="daftarPetugas.php">Daftar Petugas</a>
         <a href="daftarPosko.php">Daftar Posko</a>
         <a href="daftarKeluarga.php">Daftar Keluarga</a>
-        <button type="submit" name="logout" class="logout-btn" id="logout-btn">Logout</button>
-    </div>
-
-    <!-- Notifikasi -->
-    <div id="notification" class="notification">
-        <p id="notif-message">Logout berhasil!</p>
+        <form action="logout.php" method="POST">
+            <button type="submit" name="logout" class="logout-btn">Logout</button>
+        </form>
     </div>
 
     <!-- Navbar -->
@@ -319,7 +319,7 @@
     <div class="main-content">
         <!-- Form Tambah Bencana -->
         <div class="form-container">
-            <h3>Tambah Bencana</h3>
+            <h4>Tambah Bencana</h4>
             <form action="tambah_bencana.php" method="POST">
                 <input type="text" name="nama_bencana" placeholder="Nama Bencana" required>
                 <input type="text" name="jenis_bencana" placeholder="Jenis Bencana" required>
@@ -388,47 +388,6 @@
             mainContent.classList.remove('active');
         });
 
-        // Fungsi untuk menampilkan notifikasi
-        function showNotification(message, type) {
-            const notif = document.getElementById("notification");
-            const notifMessage = document.getElementById("notif-message");
-
-            // Menyesuaikan jenis notifikasi (sukses atau error)
-            notif.classList.remove("error", "show");
-            if (type === "error") {
-                notif.classList.add("error");
-            }
-            notif.classList.add("show");
-            notifMessage.textContent = message;
-
-            // Hapus notifikasi setelah 3 detik
-            setTimeout(() => {
-                notif.classList.remove("show");
-            }, 3000);
-        }
-
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            if (confirm("Apakah Anda yakin ingin logout?")) {
-                // Buat objek FormData untuk mengirim data POST
-                const formData = new FormData();
-                formData.append("logout", true);
-                // Kirim request POST ke beranda.php
-                fetch("beranda.php", {
-                    method: "POST",
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        // Jika berhasil, redirect ke halaman login
-                        window.location.href = "login.php";
-                    } else {
-                        alert("Logout gagal. Silakan coba lagi.");
-                    }
-                }).catch(error => {
-                    console.error("Error:", error);
-                    alert("Terjadi kesalahan. Silakan coba lagi.");
-                });
-            }
-        });
     </script>
 </body>
 </html>

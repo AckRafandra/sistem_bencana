@@ -3,7 +3,7 @@
     session_start();
 
     // Menampilkan data korban
-    $query = "SELECT * FROM korban ORDER BY NIK ASC";
+    $query = "SELECT * FROM korban ORDER BY nama ASC";
     $result = $db->query($query);
 ?>
 
@@ -108,7 +108,9 @@
             cursor: pointer;
             color: #E8EEF1;
         }
-        
+        h3 {
+            color: white;
+        }
         /* Tombol Logout */
         .logout-btn {
             background-color: #1F80C0;
@@ -304,12 +306,9 @@
         <a href="daftarPetugas.php">Daftar Petugas</a>
         <a href="daftarPosko.php">Daftar Posko</a>
         <a href="daftarKeluarga.php">Daftar Keluarga</a>
-        <button type="submit" name="logout" class="logout-btn" id="logout-btn">Logout</button>
-    </div>
-
-    <!-- Notifikasi -->
-    <div id="notification" class="notification">
-        <p id="notif-message">Logout berhasil!</p>
+        <form action="logout.php" method="POST">
+            <button type="submit" name="logout" class="logout-btn">Logout</button>
+        </form>
     </div>
 
     <!-- Navbar -->
@@ -323,13 +322,13 @@
     <div class="main-content">
         <!-- Form Tambah Korban -->
         <div class="form-container">
-            <h3>Tambah Korban</h3>
+            <h4>Tambah Korban</h4>
             <form action="tambah_korban.php" method="POST" enctype="multipart/form-data">
-                <input type="text" name="nik" placeholder="NIK" required>
+                <input type="text" name="NIK" placeholder="NIK" required>
                 <input type="number" name="id_bencana" placeholder="ID Bencana" required>
                 <select name="jenis_kelamin" required>
-                    <option value="L">Laki-laki</option>
-                    <option value="P">Perempuan</option>
+                    <option value="Laki-Laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
                 </select>
                 <input type="text" name="nama" placeholder="Nama" required>
                 <input type="text" name="asal" placeholder="Asal" required>
@@ -363,7 +362,7 @@
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
                             echo "<td>" . $row['id_korban'] . "</td>";
-                            echo "<td>" . $row['nik'] . "</td>";
+                            echo "<td>" . $row['NIK'] . "</td>";
                             echo "<td>" . $row['id_bencana'] . "</td>";
                             echo "<td>" . $row['jenis_kelamin'] . "</td>";
                             echo "<td>" . $row['nama'] . "</td>";
@@ -400,47 +399,6 @@
             mainContent.classList.remove('active');
         });
 
-        // Fungsi untuk menampilkan notifikasi
-        function showNotification(message, type) {
-            const notif = document.getElementById("notification");
-            const notifMessage = document.getElementById("notif-message");
-
-            // Menyesuaikan jenis notifikasi (sukses atau error)
-            notif.classList.remove("error", "show");
-            if (type === "error") {
-                notif.classList.add("error");
-            }
-            notif.classList.add("show");
-            notifMessage.textContent = message;
-
-            // Hapus notifikasi setelah 3 detik
-            setTimeout(() => {
-                notif.classList.remove("show");
-            }, 3000);
-        }
-
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            if (confirm("Apakah Anda yakin ingin logout?")) {
-                // Buat objek FormData untuk mengirim data POST
-                const formData = new FormData();
-                formData.append("logout", true);
-                // Kirim request POST ke beranda.php
-                fetch("beranda.php", {
-                    method: "POST",
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        // Jika berhasil, redirect ke halaman login
-                        window.location.href = "login.php";
-                    } else {
-                        alert("Logout gagal. Silakan coba lagi.");
-                    }
-                }).catch(error => {
-                    console.error("Error:", error);
-                    alert("Terjadi kesalahan. Silakan coba lagi.");
-                });
-            }
-        });
     </script>
 </body>
 </html>

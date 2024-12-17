@@ -2,7 +2,11 @@
     include "koneksi.php"; // Menghubungkan ke database
     session_start();
 
-    // Ambil ID korban dari parameter URL
+    // Pastikan ada parameter id di URL
+    if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+        die("ID Korban tidak valid.");
+    }
+
     $id_korban = $_GET['id'];
 
     // Ambil data korban berdasarkan ID
@@ -24,7 +28,7 @@
 
         // Update data korban
         $updateQuery = $db->prepare("UPDATE korban SET nik = ?, id_bencana = ?, jenis_kelamin = ?, nama = ?, asal = ?, usia = ?, status = ?, id_posko = ? WHERE id_korban = ?");
-        $updateQuery->bind_param("sisssisi", $nik, $id_bencana, $jenis_kelamin, $nama, $asal, $usia, $status, $id_posko, $id_korban);
+        $updateQuery->bind_param("sisssisii", $nik, $id_bencana, $jenis_kelamin, $nama, $asal, $usia, $status, $id_posko, $id_korban);
 
         if ($updateQuery->execute()) {
             header("Location: daftarKorban.php");

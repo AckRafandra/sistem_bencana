@@ -1,11 +1,7 @@
 <?php 
     include "koneksi.php"; 
     session_start();
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
-        session_destroy();
-        echo "Logout berhasil.";
-        exit();
-    }
+    
     // Menampilkan data Posko
     $query = "SELECT * FROM posko ORDER BY id_posko ASC";
     $result = $db->query($query);
@@ -106,6 +102,9 @@
         h2 {
             color: #333;
             margin: 20px 0;
+        }
+        h3 {
+            color: white;
         }
 
         /* Navbar */
@@ -323,7 +322,9 @@
         <a href="daftarPetugas.php">Daftar Petugas</a>
         <a href="daftarPosko.php">Daftar Posko</a>
         <a href="daftarKeluarga.php">Daftar Keluarga</a>
-        <button type="submit" name="logout" class="logout-btn" id="logout-btn">Logout</button>
+        <form action="logout.php" method="POST">
+            <button type="submit" name="logout" class="logout-btn">Logout</button>
+        </form>
     </div>
 
     <!-- Navbar -->
@@ -336,7 +337,7 @@
     <div class="main-content">
         <!-- Form Tambah Posko -->
         <div class="form-container">
-            <h3>Tambah Posko Baru</h3>
+            <h4>Tambah Posko Baru</h4>
             <form action="tambah_posko.php" method="POST" enctype="multipart/form-data">
                 <input type="text" name="nama_posko" placeholder="Nama Posko" required><br>
                 <input type="text" name="penanggung_jawab" placeholder="Penanggung Jawab" required><br>
