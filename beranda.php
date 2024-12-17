@@ -1,38 +1,46 @@
-
 <?php 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "db_bencana";
+    include "koneksi.php"; // Menggunakan koneksi dengan $db
+    session_start();
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Logout dan kirimkan ke tabel user
+    if (isset($_POST['logout'])) {
+        $user_id = $_SESSION['user_id']; // Asumsikan ada user_id di session
+        $logout_time = date('Y-m-d H:i:s'); // Waktu logout
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+        // Menyimpan data logout ke tabel 'user'
+        date_default_timezone_set('Asia/Jakarta');
+        $query = $db->prepare("UPDATE user SET last_logout = ? WHERE id_user = ?");
+        $query->bind_param("si", $logout_time, $user_id);
+        if ($query->execute()) {
+            // Hapus session dan logout
+            session_unset();
+            session_destroy();
+            header('Location: login.php'); // Redirect ke halaman login
+            exit();
+        } else {
+            echo "Error: " . $db->error;
+        }
+    }
 
-// Query untuk chart 1: Jumlah Bencana berdasarkan Jenis Bencana
-$query1 = $conn->query("SELECT jenis_bencana, COUNT(*) AS total FROM bencana GROUP BY jenis_bencana");
-$chart1_labels = [];
-$chart1_data = [];
+    // Query untuk chart 1: Jumlah Bencana berdasarkan Jenis Bencana
+    $query1 = $db->query("SELECT jenis_bencana, COUNT(*) AS total FROM bencana GROUP BY jenis_bencana");
+    $chart1_labels = [];
+    $chart1_data = [];
 
-while ($row = $query1->fetch_assoc()) {
-    $chart1_labels[] = $row['jenis_bencana'];
-    $chart1_data[] = $row['total'];
-}
+    while ($row = $query1->fetch_assoc()) {
+        $chart1_labels[] = $row['jenis_bencana'];
+        $chart1_data[] = $row['total'];
+    }
 
-// Query untuk chart 2: Jumlah Korban berdasarkan Daerah
-$query2 = $conn->query("SELECT asal, COUNT(*) AS total FROM korban GROUP BY asal");
-$chart2_labels = [];
-$chart2_data = [];
+    // Query untuk chart 2: Jumlah Korban berdasarkan Daerah
+    $query2 = $db->query("SELECT asal, COUNT(*) AS total FROM korban GROUP BY asal");
+    $chart2_labels = [];
+    $chart2_data = [];
 
-while ($row = $query2->fetch_assoc()) {
-    $chart2_labels[] = $row['asal'];
-    $chart2_data[] = $row['total'];
-}
-
+    while ($row = $query2->fetch_assoc()) {
+        $chart2_labels[] = $row['asal'];
+        $chart2_data[] = $row['total'];
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,21 +57,18 @@ while ($row = $query2->fetch_assoc()) {
 
     <!-- CSS Styling -->
     <style>
-        @media screen and (max-width: 576px) {
-            .sidebar {
-                left: -100%;
-                width: 100%;
-            }
-            .sidebar.active {
-                left: 0;
-            }
-            .main-content {
-                margin-left: 0;
+        @media screen and (max-width: 768px) {
+            .graph-container {
+                flex-direction: column;
+                align-items: center;
             }
             .graph {
-                height: 300px;
+                width: 100%;
+                max-width: 100%;
+                margin-bottom: 20px;
             }
         }
+
         * {
             margin: 0;
             padding: 0;
@@ -134,7 +139,75 @@ while ($row = $query2->fetch_assoc()) {
             cursor: pointer;
             color: #E8EEF1;
         }
+        /* Tombol Logout */
+        .logout-btn {
+            background-color: #1F80C0;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
 
+        .logout-btn:hover {
+            background-color: #1683b0;
+            transform: scale(1.05);
+        }
+
+        .logout-btn:focus {
+            outline: none;
+        }
+
+        /* Notifikasi */
+        .notification {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .notification.error {
+            background-color: #dc3545;
+        }
+
+        .notification.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Animasi keluar untuk notifikasi */
+        @keyframes slide-in {
+            from {
+                bottom: -50px;
+                opacity: 0;
+            }
+            to {
+                bottom: 20px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes slide-out {
+            from {
+                bottom: 20px;
+                opacity: 1;
+            }
+            to {
+                bottom: -50px;
+                opacity: 0;
+            }
+        }
         /* Main Content */
         .main-content {
             margin-left: 0;
@@ -191,11 +264,11 @@ while ($row = $query2->fetch_assoc()) {
             color: #E8EEF1;
         }
         #chart1{
-        width: 90%;
+        width: 95%;
         height: auto;
         }
         #chart2{
-        width: 90%;
+        width: 350px;
         }
 
     </style>
@@ -211,7 +284,12 @@ while ($row = $query2->fetch_assoc()) {
         <a href="daftarPetugas.php">Daftar Petugas</a>
         <a href="daftarPosko.php">Daftar Posko</a>
         <a href="daftarKeluarga.php">Daftar Keluarga</a>
-        <a href="login.php">Logout</a>
+        <button type="submit" name="logout" class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+
+    <!-- Notifikasi -->
+    <div id="notification" class="notification">
+        <p id="notif-message">Logout berhasil!</p>
     </div>
 
     <!-- Navbar -->
@@ -229,36 +307,36 @@ while ($row = $query2->fetch_assoc()) {
             <div class="card">
                 <h3>Total Bencana</h3>
                 <?php
-                $result = $conn->query("SELECT COUNT(*) AS total FROM bencana");
+                $result = $db->query("SELECT COUNT(*) AS total FROM bencana");
                 if ($result) {
                     $row = $result->fetch_assoc();
                     echo "<p>" . $row['total'] . "</p>";
                 } else {
-                    echo "<p>Error: " . $conn->error . "</p>";
+                    echo "<p>Error: " . $db->error . "</p>";
                 }
                 ?>         
             </div>
             <div class="card">
                 <h3>Total Korban</h3>
                 <?php
-                $result = $conn->query("SELECT COUNT(*) AS total FROM korban");
+                $result = $db->query("SELECT COUNT(*) AS total FROM korban");
                 if ($result) {
                     $row = $result->fetch_assoc();
                     echo "<p>" . $row['total'] . "</p>";
                 } else {
-                    echo "<p>Error: " . $conn->error . "</p>";
+                    echo "<p>Error: " . $db->error . "</p>";
                 }
                 ?>
             </div>
             <div class="card">
                 <h3>Total Posko</h3>
                 <?php
-                $result = $conn->query("SELECT COUNT(DISTINCT id_posko) AS total FROM posko");
+                $result = $db->query("SELECT COUNT(DISTINCT id_posko) AS total FROM posko");
                 if ($result) {
                     $row = $result->fetch_assoc();
                     echo "<p>" . $row['total'] . "</p>";
                 } else {
-                    echo "<p>Error: " . $conn->error . "</p>";
+                    echo "<p>Error: " . $db->error . "</p>";
                 }
                 ?>
             </div>
@@ -286,14 +364,33 @@ while ($row = $query2->fetch_assoc()) {
         const mainContent = document.getElementById('main-content');
 
         menuBtn.addEventListener('click', () => {
-            sidebar.classList.add('active');
-            mainContent.classList.add('active');
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('active');
         });
 
         closeSidebar.addEventListener('click', () => {
             sidebar.classList.remove('active');
             mainContent.classList.remove('active');
         });
+
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, type) {
+            const notif = document.getElementById("notification");
+            const notifMessage = document.getElementById("notif-message");
+
+            // Menyesuaikan jenis notifikasi (sukses atau error)
+            notif.classList.remove("error", "show");
+            if (type === "error") {
+                notif.classList.add("error");
+            }
+            notif.classList.add("show");
+            notifMessage.textContent = message;
+
+            // Hapus notifikasi setelah 3 detik
+            setTimeout(() => {
+                notif.classList.remove("show");
+            }, 3000);
+        }
 
         const chart1Labels = <?php echo json_encode($chart1_labels); ?>;
         const chart1Data = <?php echo json_encode($chart1_data); ?>;
@@ -316,14 +413,7 @@ while ($row = $query2->fetch_assoc()) {
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                },
+                responsive: false,
                 scales: {
                     y: { beginAtZero: true }
                 }
@@ -350,17 +440,33 @@ while ($row = $query2->fetch_assoc()) {
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                },
+                responsive: false,
                 scales: {
                     y: { beginAtZero: true }
                 }
+            }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", function() {
+            if (confirm("Apakah Anda yakin ingin logout?")) {
+                // Buat objek FormData untuk mengirim data POST
+                const formData = new FormData();
+                formData.append("logout", true);
+                // Kirim request POST ke beranda.php
+                fetch("beranda.php", {
+                    method: "POST",
+                    body: formData
+                }).then(response => {
+                    if (response.ok) {
+                        // Jika berhasil, redirect ke halaman login
+                        window.location.href = "login.php";
+                    } else {
+                        alert("Logout gagal. Silakan coba lagi.");
+                    }
+                }).catch(error => {
+                    console.error("Error:", error);
+                    alert("Terjadi kesalahan. Silakan coba lagi.");
+                });
             }
         });
     </script>

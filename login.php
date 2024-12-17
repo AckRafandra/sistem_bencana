@@ -1,26 +1,46 @@
 <?php
-    include "koneksi.php";
-    session_start();
+include "koneksi.php";
+session_start();
 
-    if(isset($_POST['login'])){
-        $username = $_POST['username'];
-        $password = $_POST['password'];
+if (isset($_POST['login'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-        $sql = "SELECT * FROM admin WHERE username='$username' AND password='$password'";
+    // Mencari pengguna berdasarkan username dan password
+    $sql = "SELECT * FROM users WHERE username='$username' AND password='$password'";
 
-        $result = $db->query($sql);
+    $result = $db->query($sql);
 
-        if($result->num_rows > 0){
-            $row = $result->fetch_assoc();
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
 
-            $_SESSION["username"] = $row["username"];
-            $_SESSION["is_login"] = true;
+        // Menyimpan data ke dalam session
+        $_SESSION["id_user"] = $row["id_user"];
+        $_SESSION["username"] = $row["username"];
+        $_SESSION["role"] = $row["role"];
+        $_SESSION["is_login"] = true;
 
-            header("location: dashboard.php");
-        }else{
-            echo"akun tidak ditemukan";
+        // Menyimpan waktu login ke dalam session
+        date_default_timezone_set('Asia/Jakarta');
+        $_SESSION["last_login"] = $row["last_login"];
+
+        // Update last_login pada tabel users
+        $id_user = $row["id_user"];
+        $last_login = date("Y-m-d H:i:s"); // Waktu login saat ini
+
+        // Query untuk memperbarui kolom last_login
+        $update_sql = "UPDATE users SET last_login='$last_login' WHERE id_user='$id_user'";
+
+        if ($db->query($update_sql) === TRUE) {
+            // Redirect ke halaman beranda
+            header("location: beranda.php");
+        } else {
+            echo "Error: " . $db->error;
         }
+    } else {
+        echo "Akun tidak ditemukan";
     }
+}
 ?>
 
 <!DOCTYPE html>
@@ -110,7 +130,7 @@
     <!-- Login Form -->
     <div class="login-container">
         <h2>Login</h2>
-        <form action="index.php" method="POST">
+        <form action="login.php" method="POST">
             <label for="username">Username:</label>
             <input type="text" name="username" placeholder="Masukkan username" required>
             

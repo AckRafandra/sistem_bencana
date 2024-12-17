@@ -1,11 +1,15 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$database = "db_bencana";
+// ganti dengan informasi database Anda
+$host = 'localhost';
+$user = 'root';
+$password = '';
+$dbname = 'db_bencana';
 
-$conn = new mysqli($host, $user, $password, $database);
-if ($conn->connect_error) {
-    die("Koneksi database gagal: " . $conn->connect_error);
+// Membuat koneksi
+$db = new mysqli($host, $user, $password, $dbname);
+
+// Cek koneksi
+if ($db->connect_error) {
+    die("Koneksi gagal: " . $db->connect_error);
 }
 ?>
