@@ -336,6 +336,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>ID Bencana</th>
                     <th>Nama Bencana</th>
                     <th>Jenis Bencana</th>
@@ -348,9 +349,11 @@
             </thead>
             <tbody>
                 <?php
+                    $no=1;
                     if ($result) {
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
+                            echo "<td>" .$no. "</td>";
                             echo "<td>" . $row['id_bencana'] . "</td>";
                             echo "<td>" . $row['nama_bencana'] . "</td>";
                             echo "<td>" . $row['jenis_bencana'] . "</td>";
@@ -361,6 +364,7 @@
                             echo "<td><a href='updateBencana.php?id=" . $row['id_bencana'] . "'>Update</a> | 
                                   <a href='hapusBencana.php?id=" . $row['id_bencana'] . "' onclick='return confirm(\"Apakah Anda yakin ingin menghapus?\")'>Delete</a></td>";
                             echo "</tr>";
+                            $no++;
                         }
                     } else {
                         echo "<tr><td colspan='8'>Tidak ada data bencana.</td></tr>";

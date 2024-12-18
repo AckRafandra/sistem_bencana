@@ -352,6 +352,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>ID Posko</th>
                     <th>Nama Posko</th>
                     <th>Penanggung Jawab</th>
@@ -361,10 +362,12 @@
                 </tr>
             </thead>
             <tbody>
-                <?php 
+                <?php
+                    $no=1;
                     if ($result) {
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
+                            echo "<td>" .$no. "</td>";
                             echo "<td>" . $row['id_posko'] . "</td>";
                             echo "<td>" . $row['nama_posko'] . "</td>";
                             echo "<td>" . $row['penanggung_jawab'] . "</td>";
@@ -373,6 +376,7 @@
                             echo "<td><a href='updatePosko.php?id=" . $row['id_posko'] . "'>Update</a> | 
                                 <a href='hapusPosko.php?id=" . $row['id_posko'] . "' onclick='return confirm(\"Apakah Anda yakin ingin menghapus?\")'>Delete</a></td>";
                             echo "</tr>";
+                            $no++;
                         }
                     } else {
                         echo "<tr><td colspan='10'>Tidak ada data Posko.</td></tr>";

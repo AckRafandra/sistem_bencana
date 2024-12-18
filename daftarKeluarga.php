@@ -336,6 +336,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>NIK</th>
                     <th>Nomor Telepon</th>
                     <th>Hubungan</th>
@@ -344,9 +345,12 @@
                 </tr>
             </thead>
             <tbody>
-                <?php if ($result) {
+                <?php 
+                $no=1;
+                if ($result) {
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
+                            echo "<td>" .$no. "</td>";
                             echo "<td>" . $row['NIK'] . "</td>";
                             echo "<td>" . $row['nomor_telepon'] . "</td>";
                             echo "<td>" . $row['hubungan'] . "</td>";
@@ -354,6 +358,7 @@
                             echo "<td><a href='updateKeluarga.php?id=" . $row['NIK'] . "'>Update</a> | 
                                   <a href='hapusKeluarga.php?id=" . $row['NIK'] . "' onclick='return confirm(\"Apakah Anda yakin ingin menghapus?\")'>Delete</a></td>";
                             echo "</tr>";
+                            $no++;
                         }
                     } else {
                         echo "<tr><td colspan='10'>Tidak ada data keluarga.</td></tr>";

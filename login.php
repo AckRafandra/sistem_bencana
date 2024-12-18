@@ -6,11 +6,13 @@ if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Mencari pengguna berdasarkan username dan password
-    $sql = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+    // Menggunakan prepared statement untuk mencegah SQL injection
+    $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+    $stmt->bind_param("ss", $username, $password);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    $result = $db->query($sql);
-
+    // Memeriksa apakah username dan password cocok
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
 
@@ -22,23 +24,23 @@ if (isset($_POST['login'])) {
 
         // Menyimpan waktu login ke dalam session
         date_default_timezone_set('Asia/Jakarta');
-        $_SESSION["last_login"] = $row["last_login"];
+        $last_login = date("Y-m-d H:i:s");
+        $_SESSION["last_login"] = $last_login;
 
         // Update last_login pada tabel users
-        $id_user = $row["id_user"];
-        $last_login = date("Y-m-d H:i:s"); // Waktu login saat ini
+        $update_stmt = $db->prepare("UPDATE users SET last_login = ? WHERE id_user = ?");
+        $update_stmt->bind_param("si", $last_login, $row["id_user"]);
+        $update_stmt->execute();
 
-        // Query untuk memperbarui kolom last_login
-        $update_sql = "UPDATE users SET last_login='$last_login' WHERE id_user='$id_user'";
-
-        if ($db->query($update_sql) === TRUE) {
-            // Redirect ke halaman beranda
-            header("location: beranda.php");
+        // Redirect berdasarkan role
+        if ($row['role'] === 'admin') {
+            header("Location: beranda.php");
         } else {
-            echo "Error: " . $db->error;
+            header("Location: index.php");
         }
+        exit();
     } else {
-        echo "Akun tidak ditemukan";
+        $error = "Username atau password salah!";
     }
 }
 ?>
@@ -50,14 +52,11 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Rescue-Net</title>
     <style>
-        /* Reset styling */
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f4f6f9;
         }
-
-        /* Header styling */
         .header {
             background: rgb(15, 47, 103);
             color: white;
@@ -65,8 +64,6 @@ if (isset($_POST['login'])) {
             text-align: center;
             font-size: 1.5rem;
         }
-
-        /* Login container styling */
         .login-container {
             background-color: white;
             max-width: 400px;
@@ -75,19 +72,15 @@ if (isset($_POST['login'])) {
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
-
-        /* Form styling */
         h2 {
             text-align: center;
             color: #002855;
         }
-
         label {
             font-weight: bold;
             display: block;
             margin: 10px 0 5px;
         }
-
         input[type="text"], input[type="password"] {
             width: 100%;
             padding: 10px;
@@ -96,7 +89,6 @@ if (isset($_POST['login'])) {
             border-radius: 5px;
             box-sizing: border-box;
         }
-
         button {
             width: 100%;
             padding: 10px;
@@ -108,12 +100,15 @@ if (isset($_POST['login'])) {
             cursor: pointer;
             margin-top: 10px;
         }
-
         button:hover {
             background-color: #00509d;
         }
-
-        /* Footer styling */
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+        }
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -123,13 +118,12 @@ if (isset($_POST['login'])) {
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <strong>Rescue-Net</strong>
     </div>
-    <!-- Login Form -->
     <div class="login-container">
         <h2>Login</h2>
+        <?php if (isset($error)) { echo "<p class='error'>$error</p>"; } ?>
         <form action="login.php" method="POST">
             <label for="username">Username:</label>
             <input type="text" name="username" placeholder="Masukkan username" required>
@@ -140,7 +134,6 @@ if (isset($_POST['login'])) {
             <button type="submit" name="login">Login</button>
         </form>
     </div>
-    <!-- Footer -->
     <div class="footer">
         &copy; 2024 Rescue-Net. Semua Hak Dilindungi.
     </div>
